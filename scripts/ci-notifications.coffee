@@ -36,5 +36,5 @@ module.exports = (robot) ->
 
     console.log("Sending message to room.")
 
-    #robot.send(user, message)
+    robot.send({ flow: 'main' }, "test")
     res.end "OK"
