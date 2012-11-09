@@ -4,7 +4,6 @@ querystring = require('querystring')
 
 module.exports = (robot) ->
   robot.router.get "/hubot/ci-notification", (req, res) ->
-    console.log(require('url').parse(req.url).query)
     query = querystring.parse(require('url').parse(req.url).query)
 
     user = {}
@@ -14,26 +13,21 @@ module.exports = (robot) ->
 
     user.name = "Siri"
 
-    console.log("User information parsed.")
-
     projectName = query.projectName
     buildStatus = query.buildStatus
     commit = query.commit
     commitAuthor = query.commitAuthor
     branch = query.branch
 
-    console.log("Message built.")
-
     message = ""
 
     if buildStatus == "passing"
       message = "The build of " + branch + " for commit " + commit + " by " + commitAuthor + " has passed all tests."
     else
-      message = commitAuthor + " broke the build for " + branch + " with commit " + commit
+      message = commitAuthor + " broke the build for " + branch + " with commit " + commit + "."
 
-    if branch == "master"
-      message += " This code has been deployed to production. @everyone #release"
-
-    console.log("Sending message to room.")
+    if branch == "master" && buildStatus == "passing"
+      message += " This code has been deployed to production. #release"
 
     robot.send(user, message)
+    res.end("OK")
