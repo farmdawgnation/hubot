@@ -4,7 +4,7 @@ querystring = require('querystring')
 
 module.exports = (robot) ->
   robot.router.get "/hubot/ci-notification", (req, res) ->
-    query = querystring.parse(req._parsedUrl.query)
+    query = querystring.parse(require('url').parse(request.url).query)
 
     user = {}
     user.room = query.room if query.room
