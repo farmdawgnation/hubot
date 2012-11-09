@@ -12,6 +12,8 @@ module.exports = (robot) ->
     user.type = query.type if query.type
     user.flow = query.flow if query.flow
 
+    user.name = "Siri"
+
     console.log("User information parsed.")
 
     projectName = query.projectName
