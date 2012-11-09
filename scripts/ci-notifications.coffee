@@ -24,7 +24,7 @@ module.exports = (robot) ->
 
     message = ""
 
-    if buildStatus = "passing"
+    if buildStatus == "passing"
       message = "The build of " + branch + " for commit " + commit + " by " + commitAuthor + " has passed all tests."
     else
       message = commitAuthor + " broke the build for " + branch + " with commit " + commit
