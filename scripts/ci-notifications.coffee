@@ -4,6 +4,7 @@ querystring = require('querystring')
 
 module.exports = (robot) ->
   robot.router.get "/hubot/ci-notification", (req, res) ->
+    console.log(require('url').parse(req.url).query)
     query = querystring.parse(require('url').parse(req.url).query)
 
     user = {}
@@ -11,11 +12,15 @@ module.exports = (robot) ->
     user.type = query.type if query.type
     user.flow = query.flow if query.flow
 
+    console.log("User information parsed.")
+
     projectName = query.projectName
     buildStatus = query.buildStatus
     commit = query.commit
     commitAuthor = query.commitAuthor
     branch = query.branch
+
+    console.log("Message built.")
 
     message = ""
 
@@ -26,5 +31,7 @@ module.exports = (robot) ->
 
     if branch == "master"
       message += " This code has been deployed to production. @everyone #release"
+
+    console.log("Sending message to room.")
 
     robot.send(user, message)
