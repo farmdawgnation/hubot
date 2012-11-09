@@ -36,6 +36,7 @@ module.exports = (robot) ->
 
     console.log("Sending message to room.")
 
-    flowids = flow.id for flow in robot.flows
-    robot.send({ flow: flowids[0] }, "test")
-    res.end "OK"
+    robot.flows (flows) ->
+      flowids = flow.id for flow in flows
+      robot.send({ flow: flowids[0] }, "test")
+      res.end "OK"
