@@ -35,3 +35,4 @@ module.exports = (robot) ->
     console.log("Sending message to room.")
 
     robot.send(user, message)
+    res.send(200)
