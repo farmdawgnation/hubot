@@ -10,7 +10,7 @@ module.exports = (robot) ->
     user.flow = query.subject # use the subject to target the room
     user.name = "Siri"
 
-    message = query.body
+    message = query.body.replace(/\n+$/, "")
 
     robot.send(user, message)
     res.end("OK")
