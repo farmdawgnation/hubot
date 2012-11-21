@@ -49,8 +49,13 @@ doRollback = (migrationCount) ->
       result = "Rollback error occured:"
 
       lines = stdout.split /\n/g
-      result += "    " + line for line in lines
+      result += "    " + line + "\n" for line in lines
       return result
+
+doDeploy = (callback) ->
+  deployCommand = process.env.DEPLOYISMO_DEPLOY_COMMAND
+
+  cp.exec deployCommand, callback
 
 getProductionStatus = (callback) ->
   cp.exec process.env.DEPLOYISMO_STATUS_COMMAND, callback
@@ -73,6 +78,38 @@ getGithubPullRequestFiles = (pullNumber, callback) ->
     per_page: 100 # The max, sir.
 
   github.pullRequests.getFiles prFilesQuery, callback
+
+getGithubCommitStatus = (commitSha, callback) ->
+  authenticate()
+  statusQuery =
+    user: process.env.DEPLOYISMO_REPO_USER
+    repo: process.env.DEPLOYISMO_REPO_REPO
+    sha: commitSha
+
+  github.statuses.get statusQuery, callback
+
+latestCommitStatus = (statusArray) ->
+  return null unless statusArray.length
+
+  latestStatus = statusArray[0]
+  latestStatus = status for status in statusArray when new Date(latestStatus.updated_at) < new Date(status.updated_at)
+
+  latestStatus
+
+isBranchUpToDateWithMaster = (branchName, callback) ->
+  authenticate()
+  compareQuery =
+    user: process.env.DEPLOYISMO_REPO_USER
+    repo: provess.env.DEPLOYISMO_REPO_REPO
+    base: branchName
+    head: "master"
+
+  github.repos.compareCommits compareQuery, (err, result) ->
+    if err
+      console.err "Github error: " + err
+      callback(false)
+    else
+      callback(result.ahead_by == 0)
 
 ##         ##
 ## Exports ##
@@ -97,7 +134,54 @@ module.exports = (robot) ->
     #   1. Execute the DEPLOYISMO_DEPLOY_COMMAND on the remote server with the SHA hash of
     #      the head commit and the pull request remote name as arguments.
     #   2. Comment on the pull request to note that it has been deployed to production.
-    # TODO
+    getProductionStatus (err, stdout, stderr) ->
+      if /refs\/pr/.test(stdout)
+        msg.send "A pull request is already deployed on prod. I cannot deploy another right now."
+        return
+
+      requestedPullRequestNumber = msg.match[1]
+
+      getGithubPullRequest requestedPullRequestNumber, (err, pull) ->
+        if err
+          msg.send "Error retrieving pull request: " + err
+          return
+
+        if pull.merged || pull.state == "closed"
+          msg.send "Sorry, I can't deploy a merged or closed pull request. Please look behind door number 2."
+          return
+
+        if pull.base.label != "master"
+          msg.send "You bozo. You can't ask me to deploy something that isn't targeted at master."
+          return
+
+        getGithubCommitStatus pull.head.sha, (err, commitStatusArray) ->
+          if err
+            msg.send "Error retrieving commit status " + err
+            return
+
+          latestStatus = latestCommitStatus(commitStatusArray)
+
+          if latestStatus == null || latestStatus.state != "success"
+            msg.send "It doesn't look like pull request " + requestedPullNumber + " has passed testing. Please wait for Jenkins."
+            return
+
+          isBranchUpToDateWithMaster (upToDate) ->
+            unless upToDate
+              msg.send "You need to merge master into your branch before I can deploy your pull request."
+              return
+
+            # At this point, we've passed all the checks. Well, shucks, buster. I guess it's time to
+            # actually deploy something to the production server. YEEEHAWWWWW!
+            msg.send "Pull request #" + requestedPullRequestNumber + " looks valid. Well done, sir. Go grab a beer from the kegerator while I work."
+
+            doDeploy (err, stdout, stderr) ->
+              # Check return status.
+              if err.code == 0
+                msg.send "Deployment to production looks successful. Look to hear from Monit shortly."
+              else
+                resultMessage = "Something went wrong with deployment."
+                resultMessage += "    " + line + "\n" for line in stdout.split("\n")
+                msg.send resultMessage
 
   robot.respond /deploy rollback$/i, (msg) ->
     # Handle the process of a production rollback due to a faulty branch. The process for
