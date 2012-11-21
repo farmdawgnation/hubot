@@ -12,10 +12,11 @@
 # Configuration:
 #   DEPLOYISMO_USERNAME: The username deployismo should use to authenticate.
 #   DEPLOYISMO_PASSWORD: The password deployismo should use to authenticate.
-#   DEPLOYISMO_REPOSITORY: The repository in the form "user/reponame"
-#   DEPLOYISMO_REMOTE_SERVER: Remote deployment server SSH login string.
-#   DEPLOYISMO_DEPLOY_COMMAND: The deploy command to execute on the remote server.
-#   DEPLOYISMO_ROLLBACK_COMMAND: The rollback command to execute on the remote server.
+#   DEPLOYISMO_REPO_USER: The repository user.
+#   DEPLOYISMO_REPO_REPO: The repo name.
+#   DEPLOYISMO_DEPLOY_COMMAND: The deploy command to execute on the shell.
+#   DEPLOYISMO_ROLLBACK_COMMAND: The rollback command to execute on the shell.
+#   DEPLOYISMO_STATUS_COMMAND: The status command to execute on the shell.
 #
 # Commands:
 #   hubot deploy status - Retrieve information about prod.
@@ -24,12 +25,65 @@
 #
 # Author:
 #   farmdawgnation
+cp = require 'child_process'
+
+GitHubApi = require("github");
+
+github = new GitHubApi({
+    version: "3.0.0"
+});
+
+authenticate = ->
+  github.authenticate
+    type: "basic",
+    username: process.env.DEPLOYISMO_USERNAME,
+    password: process.env.DEPLOYISMO_PASSWORD
+
+doRollback = (migrationCount) ->
+  rollbackCommand = process.env.DEPLOYISMO_ROLLBACK_COMMAND.replace(/_migrationCount_/g, migrationCount)
+
+  cp.exec rollbackCommand, (err, stdout, stderr) ->
+    if err.code == 0
+      return "Rollback completed successfully."
+    else
+      result = "Rollback error occured:"
+
+      lines = stdout.split /\n/g
+      result += "    " + line for line in lines
+      return result
+
+getProductionStatus = (callback) ->
+  cp.exec process.env.DEPLOYISMO_STATUS_COMMAND, callback
+
+getGithubPullRequest = (pullNumber, callback) ->
+  authenticate()
+  prQuery =
+    user: process.env.DEPLOYISMO_REPO_USER
+    repo: process.env.DEPLOYISMO_REPO_REPO
+    number: pullNumber
+
+  github.pullRequests.get pullNumber, callback
+
+getGithubPullRequestFiles = (pullNumber, callback) ->
+  authenticate()
+  prFilesQuery =
+    user: process.env.DEPLOYISMO_REPO_USER
+    repo: process.env.DEPLOYISMO_REPO_REPO
+    number: pullNumber
+    per_page: 100 # The max, sir.
+
+  github.pullRequests.getFiles prFilesQuery, callback
+
+##         ##
+## Exports ##
+##         ##
 module.exports = (robot) ->
   robot.respond /deploy status$/i, (msg) ->
     # Get the current deployment information for production. We define this as checking
     # to determine whether or not a custom branch is present by checking for a .deploy-lock
     # in the root of the server.
-    # TODO
+    getProductionStatus (err, stdout, stderr) ->
+      msg.send stdout
 
   robot.respond /deploy #?([0-9]+)$/i, (msg) ->
     # Handle the process of deploying a pull request to production. The following requirements
@@ -51,4 +105,33 @@ module.exports = (robot) ->
     #   1. Count the number of migrations in the Pull Request.
     #   2. Execute DEPLOYISMO_ROLLBACK_COMMAND on the remote server, passing the number of
     #      migrations to roll back as an argument.
-    # TODO
+    getProductionStatus (err, stdout, stderr) ->
+      unless /refs\/pr/.test(stdout)
+        msg.send "Doesn't look like a PR is active on prod. Current status output: " + stdout
+        return
+
+      activePullRequestNumber = stdout.replace("refs/pr/", "")
+
+      getGithubPullRequest activePullRequestNumber, (err, pull) ->
+        if err
+          msg.send "Error retrieving pull request: " + err
+          return
+
+        if pull.merged || pull.state == "closed"
+          msg.send "Sorry, I can't deploy a merged or closed pull request. Please open another."
+          return
+
+        if pull.base.label != "master"
+          msg.send "Sorry, I can't deploy pull requests that aren't targeted to master."
+          return
+
+        getGithubPullRequestFiles activePullRequestNumber, (err, pullFiles) ->
+          if err
+            msg.send "Error retrieving pull request files: " + err
+            return
+
+          migrations = migration for pullFile in pullFiles when pullFile.filename.matches(/db\/migrate\//)
+          migrationCount = migrations.length
+
+          msg.send "Rolling back pull request " + activePullRequestNumber ". " + migrationCount + " migrations found."
+          msg.send doRollback(migrationCount)
