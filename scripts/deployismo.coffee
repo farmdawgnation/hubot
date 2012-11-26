@@ -102,7 +102,7 @@ isBranchUpToDateWithMaster = (branchName, callback) ->
   authenticate()
   compareQuery =
     user: process.env.DEPLOYISMO_REPO_USER
-    repo: provess.env.DEPLOYISMO_REPO_REPO
+    repo: process.env.DEPLOYISMO_REPO_REPO
     base: branchName
     head: "master"
 
