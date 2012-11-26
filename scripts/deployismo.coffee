@@ -52,8 +52,10 @@ doRollback = (migrationCount) ->
       result += "    " + line + "\n" for line in lines
       return result
 
-doDeploy = (callback) ->
+doDeploy = (branchName, prNumber, callback) ->
   deployCommand = process.env.DEPLOYISMO_DEPLOY_COMMAND
+  deployCommand = deployCommand.replace(/_branchName_/g, branchName)
+  deployCommand = deployCommand.replace(/_prNumber_/g, prNumber)
 
   cp.exec deployCommand, callback
 
@@ -174,7 +176,7 @@ module.exports = (robot) ->
             # actually deploy something to the production server. YEEEHAWWWWW!
             msg.send "Pull request #" + requestedPullRequestNumber + " looks valid. Well done, sir. Go grab a beer from the kegerator while I work."
 
-            doDeploy (err, stdout, stderr) ->
+            doDeploy pull.head.ref, pull.number, (err, stdout, stderr) ->
               # Check return status.
               if err.code == 0
                 msg.send "Deployment to production looks successful. Look to hear from Monit shortly."
