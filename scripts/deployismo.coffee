@@ -108,7 +108,7 @@ isBranchUpToDateWithMaster = (branchName, callback) ->
 
   github.repos.compareCommits compareQuery, (err, result) ->
     if err
-      console.err "Github error: " + err
+      console.error "Github error: " + err
       callback(false)
     else
       callback(result.ahead_by == 0)
@@ -167,7 +167,7 @@ module.exports = (robot) ->
             msg.send "It doesn't look like pull request " + requestedPullNumber + " has passed testing. Please wait for Jenkins."
             return
 
-          isBranchUpToDateWithMaster (upToDate) ->
+          isBranchUpToDateWithMaster pull.head.ref, (upToDate) ->
             unless upToDate
               msg.send "You need to merge master into your branch before I can deploy your pull request."
               return
