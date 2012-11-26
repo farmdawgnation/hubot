@@ -163,6 +163,10 @@ module.exports = (robot) ->
 
           latestStatus = latestCommitStatus(commitStatusArray)
 
+          if latestStatus == "failure"
+            msg.send "Pull request " + requestedPullRequestNumber + " has failing tests. Please correct failing specs or cukes before continuing."
+            return
+
           if latestStatus == null || latestStatus.state != "success"
             msg.send "It doesn't look like pull request " + requestedPullRequestNumber + " has passed testing. Please wait for Jenkins."
             return
