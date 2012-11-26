@@ -69,7 +69,7 @@ getGithubPullRequest = (pullNumber, callback) ->
     repo: process.env.DEPLOYISMO_REPO_REPO
     number: pullNumber
 
-  github.pullRequests.get pullNumber, callback
+  github.pullRequests.get prQuery, callback
 
 getGithubPullRequestFiles = (pullNumber, callback) ->
   authenticate()
