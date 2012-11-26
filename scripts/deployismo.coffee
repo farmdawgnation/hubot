@@ -164,7 +164,7 @@ module.exports = (robot) ->
           latestStatus = latestCommitStatus(commitStatusArray)
 
           if latestStatus == null || latestStatus.state != "success"
-            msg.send "It doesn't look like pull request " + requestedPullNumber + " has passed testing. Please wait for Jenkins."
+            msg.send "It doesn't look like pull request " + requestedPullRequestNumber + " has passed testing. Please wait for Jenkins."
             return
 
           isBranchUpToDateWithMaster pull.head.ref, (upToDate) ->
