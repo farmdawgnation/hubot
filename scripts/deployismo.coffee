@@ -135,7 +135,7 @@ module.exports = (robot) ->
     #      the head commit and the pull request remote name as arguments.
     #   2. Comment on the pull request to note that it has been deployed to production.
     getProductionStatus (err, stdout, stderr) ->
-      if /refs\/pr/.test(stdout)
+      if /^[0-9]+$/.test(stdout)
         msg.send "A pull request is already deployed on prod. I cannot deploy another right now."
         return
 
