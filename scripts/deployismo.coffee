@@ -152,7 +152,7 @@ module.exports = (robot) ->
           msg.send "Sorry, I can't deploy a merged or closed pull request. Please look behind door number 2."
           return
 
-        if pull.base.label != "master"
+        if pull.base.ref != "master"
           msg.send "You bozo. You can't ask me to deploy something that isn't targeted at master."
           return
 
