@@ -182,7 +182,7 @@ module.exports = (robot) ->
 
             doDeploy pull.head.ref, pull.number, (err, stdout, stderr) ->
               # Check return status.
-              if err.code == 0
+              if err == null || err.code == 0
                 msg.send "Deployment to production looks successful. Look to hear from Monit shortly."
               else
                 resultMessage = "Something went wrong with deployment."
