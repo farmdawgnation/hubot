@@ -196,11 +196,11 @@ module.exports = (robot) ->
     #   2. Execute DEPLOYISMO_ROLLBACK_COMMAND on the remote server, passing the number of
     #      migrations to roll back as an argument.
     getProductionStatus (err, stdout, stderr) ->
-      unless /refs\/pr/.test(stdout)
-        msg.send "Doesn't look like a PR is active on prod. Current status output: " + stdout
+      unless /^[0-9]+$/.test(stdout)
+        msg.send "Doesn't look like a pull request is active on prod."
         return
 
-      activePullRequestNumber = stdout.replace("refs/pr/", "")
+      activePullRequestNumber = stdout
 
       getGithubPullRequest activePullRequestNumber, (err, pull) ->
         if err
