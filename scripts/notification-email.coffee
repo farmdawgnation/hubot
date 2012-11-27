@@ -5,13 +5,15 @@ querystring = require('querystring')
 module.exports = (robot) ->
   robot.router.get "/hubot/notification-email", (req, res) ->
     query = querystring.parse(require('url').parse(req.url).query)
+    mandrill_events = req.body.mandrill_events
 
-    user = {}
-    user.flow = query.subject # use the subject to target the room
-    user.name = "Siri"
+    for event in mandrill_events
+      user = {}
+      user.flow = event.msg.subject
+      user.name = "Siri"
 
-    if query.text
-      message = query.text.replace(/\n+$/, "")
-      robot.send(user, message)
+      if event.msg.text
+        message = event.msg.text.replace(/\n+$/, "")
+        robot.send(user, message)
 
-    res.end("OK")
+    res.end()
