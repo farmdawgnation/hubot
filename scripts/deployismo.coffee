@@ -141,7 +141,7 @@ module.exports = (robot) ->
     msg.send "Attempting to deploy pull request ##{msg.match[1]} to production."
 
     getProductionStatus (err, stdout, stderr) ->
-      if /^[0-9]+$/.test(stdout)
+      if /currently locked/.test(stdout)
         msg.send "A pull request is already deployed on prod. I cannot deploy another right now."
         return
 
@@ -202,11 +202,11 @@ module.exports = (robot) ->
     msg.send "Attempting a rollback of production."
 
     getProductionStatus (err, stdout, stderr) ->
-      unless /^[0-9]+$/.test(stdout)
+      unless /currently locked. Pull request # ([0-9]+)/.test(stdout)
         msg.send "Doesn't look like a pull request is active on prod."
         return
 
-      activePullRequestNumber = stdout
+      activePullRequestNumber = /currently locked. Pull request # ([0-9]+)/.match(stdout)[1]
 
       getGithubPullRequest activePullRequestNumber, (err, pull) ->
         if err
