@@ -121,6 +121,8 @@ module.exports = (robot) ->
     # Get the current deployment information for production. We define this as checking
     # to determine whether or not a custom branch is present by checking for a .deploy-lock
     # in the root of the server.
+    msg.send "Checking the status of production."
+
     getProductionStatus (err, stdout, stderr) ->
       msg.send stdout
 
@@ -136,6 +138,8 @@ module.exports = (robot) ->
     #   1. Execute the DEPLOYISMO_DEPLOY_COMMAND on the remote server with the SHA hash of
     #      the head commit and the pull request remote name as arguments.
     #   2. Comment on the pull request to note that it has been deployed to production.
+    msg.send "Attempting to deploy pull request ##{msg.match[1]} to production."
+
     getProductionStatus (err, stdout, stderr) ->
       if /^[0-9]+$/.test(stdout)
         msg.send "A pull request is already deployed on prod. I cannot deploy another right now."
@@ -195,6 +199,8 @@ module.exports = (robot) ->
     #   1. Count the number of migrations in the Pull Request.
     #   2. Execute DEPLOYISMO_ROLLBACK_COMMAND on the remote server, passing the number of
     #      migrations to roll back as an argument.
+    msg.send "Attempting a rollback of production."
+
     getProductionStatus (err, stdout, stderr) ->
       unless /^[0-9]+$/.test(stdout)
         msg.send "Doesn't look like a pull request is active on prod."
