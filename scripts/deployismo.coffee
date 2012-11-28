@@ -221,5 +221,5 @@ module.exports = (robot) ->
           migrations = (migration for pullFile in pullFiles when pullFile.filename.match(/db\/migrate\//))
           migrationCount = migrations.length
 
-          msg.send "Rolling back pull request " + activePullRequestNumber ". " + migrationCount + " migrations found."
+          msg.send "Rolling back pull request " + activePullRequestNumber + ". " + migrationCount + " migrations found."
           msg.send doRollback(migrationCount)
