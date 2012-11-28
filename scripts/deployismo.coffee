@@ -213,14 +213,6 @@ module.exports = (robot) ->
           msg.send "Error retrieving pull request: " + err
           return
 
-        if pull.merged || pull.state == "closed"
-          msg.send "Sorry, I can't deploy a merged or closed pull request. Please open another."
-          return
-
-        if pull.base.label != "master"
-          msg.send "Sorry, I can't deploy pull requests that aren't targeted to master."
-          return
-
         getGithubPullRequestFiles activePullRequestNumber, (err, pullFiles) ->
           if err
             msg.send "Error retrieving pull request files: " + err
