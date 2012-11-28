@@ -202,32 +202,33 @@ module.exports = (robot) ->
     msg.send "Attempting a rollback of production."
 
     getProductionStatus (err, stdout, stderr) ->
-      unless /currently locked. Pull request # ([0-9]+)/.test(stdout)
-        msg.send "Doesn't look like a pull request is active on prod."
-        return
+      dataAccumulator = ""
 
-      activePullRequestNumber = stdout.toString().matches(/currently locked. Pull request # ([0-9]+)/)[1]
+      stdout.on 'data', (data) -> dataAccumulator += data.toString('utf8')
 
-      getGithubPullRequest activePullRequestNumber, (err, pull) ->
-        if err
-          msg.send "Error retrieving pull request: " + err
+      stdout.on 'end', ->
+        unless /currently locked. Pull request # ([0-9]+)/.test(stdout)
+          msg.send "Doesn't look like a pull request is active on prod."
           return
 
-        if pull.merged || pull.state == "closed"
-          msg.send "Sorry, I can't deploy a merged or closed pull request. Please open another."
-          return
+        activePullRequestNumber = stdout.toString().matches(/currently locked. Pull request # ([0-9]+)/)[1]
 
-        if pull.base.label != "master"
-          msg.send "Sorry, I can't deploy pull requests that aren't targeted to master."
-          return
-
-        getGithubPullRequestFiles activePullRequestNumber, (err, pullFiles) ->
+        getGithubPullRequest activePullRequestNumber, (err, pull) ->
           if err
-            msg.send "Error retrieving pull request files: " + err
+            msg.send "Error retrieving pull request: " + err
             return
 
-          migrations = migration for pullFile in pullFiles when pullFile.filename.matches(/db\/migrate\//)
-          migrationCount = migrations.length
+          if pull.merged || pull.state == "closed"
+            msg.send "Sorry, I can't roll back a merged or closed pull request. Please open another."
+            return
 
-          msg.send "Rolling back pull request " + activePullRequestNumber ". " + migrationCount + " migrations found."
-          msg.send doRollback(migrationCount)
+          getGithubPullRequestFiles activePullRequestNumber, (err, pullFiles) ->
+            if err
+              msg.send "Error retrieving pull request files: " + err
+              return
+
+            migrations = migration for pullFile in pullFiles when pullFile.filename.matches(/db\/migrate\//)
+            migrationCount = migrations.length
+
+            msg.send "Rolling back pull request " + activePullRequestNumber ". " + migrationCount + " migrations found."
+            #msg.send doRollback(migrationCount)
