@@ -39,18 +39,10 @@ authenticate = ->
     username: process.env.DEPLOYISMO_USERNAME,
     password: process.env.DEPLOYISMO_PASSWORD
 
-doRollback = (migrationCount) ->
+doRollback = (migrationCount, callback) ->
   rollbackCommand = process.env.DEPLOYISMO_ROLLBACK_COMMAND.replace(/_migrationCount_/g, migrationCount)
 
-  cp.exec rollbackCommand, (err, stdout, stderr) ->
-    if err.code == 0
-      return "Rollback completed successfully."
-    else
-      return "Rollback error occured: " + err.code
-
-      #lines = stdout.split /\n/g
-      #result += "    " + line + "\n" for line in lines
-      #return result
+  cp.exec rollbackCommand, callback
 
 doDeploy = (branchName, prNumber, callback) ->
   deployCommand = process.env.DEPLOYISMO_DEPLOY_COMMAND
@@ -222,4 +214,11 @@ module.exports = (robot) ->
           migrationCount = migrations.length
 
           msg.send "Rolling back pull request " + activePullRequestNumber + ". " + migrationCount + " migrations found."
-          msg.send doRollback(migrationCount)
+
+          doRollback migrationCount, (err, stdout, stderr) ->
+            if err == null || err.code == 0
+              msg.send "Rollback successful."
+            else
+            resultMessage = "Something went wrong with deployment.\n"
+            resultMessage += "    " + line + "\n" for line in stdout.split("\n")
+            msg.send resultMessage
