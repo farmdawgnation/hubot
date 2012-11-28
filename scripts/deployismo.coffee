@@ -220,6 +220,6 @@ module.exports = (robot) ->
             if err == null || err.code == 0
               msg.send "Rollback successful."
             else
-            resultMessage = "Something went wrong with deployment.\n"
-            resultMessage += "    " + line + "\n" for line in stdout.split("\n")
-            msg.send resultMessage
+              resultMessage = "Something went wrong with deployment.\n"
+              resultMessage += "    " + line + "\n" for line in stdout.split("\n")
+              msg.send resultMessage
