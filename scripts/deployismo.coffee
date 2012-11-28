@@ -206,7 +206,7 @@ module.exports = (robot) ->
         msg.send "Doesn't look like a pull request is active on prod."
         return
 
-      activePullRequestNumber = stdout.toString().matches(/currently locked. Pull request # ([0-9]+)/)[1]
+      activePullRequestNumber = String(stdout).matches(/currently locked. Pull request # ([0-9]+)/)[1]
 
       getGithubPullRequest activePullRequestNumber, (err, pull) ->
         if err
