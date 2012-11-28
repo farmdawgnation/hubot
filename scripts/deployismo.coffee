@@ -177,7 +177,7 @@ module.exports = (robot) ->
             # actually deploy something to the production server. YEEEHAWWWWW!
             msg.send "Pull request #" + requestedPullRequestNumber + " looks valid. Well done, sir. Go grab a beer from the kegerator while I work."
 
-            doDeploy pull.head.ref, pull.number, (err, stdout, stderr) ->
+            doDeploy pull.head.sha, pull.number, (err, stdout, stderr) ->
               # Check return status.
               if err == null || err.code == 0
                 msg.send "Deployment to production looks successful. Look to hear from Monit shortly."
