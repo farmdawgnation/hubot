@@ -46,11 +46,11 @@ doRollback = (migrationCount) ->
     if err.code == 0
       return "Rollback completed successfully."
     else
-      result = "Rollback error occured:"
+      return "Rollback error occured: " + err.code
 
-      lines = stdout.split /\n/g
-      result += "    " + line + "\n" for line in lines
-      return result
+      #lines = stdout.split /\n/g
+      #result += "    " + line + "\n" for line in lines
+      #return result
 
 doDeploy = (branchName, prNumber, callback) ->
   deployCommand = process.env.DEPLOYISMO_DEPLOY_COMMAND
