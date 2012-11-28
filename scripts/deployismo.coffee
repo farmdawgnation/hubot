@@ -39,8 +39,9 @@ authenticate = ->
     username: process.env.DEPLOYISMO_USERNAME,
     password: process.env.DEPLOYISMO_PASSWORD
 
-doRollback = (migrationCount, callback) ->
+doRollback = (baseRef, migrationCount, callback) ->
   rollbackCommand = process.env.DEPLOYISMO_ROLLBACK_COMMAND.replace(/_migrationCount_/g, migrationCount)
+  rollbackCommand = rollbackCommand.replace(/_baseRef_/g, baseRef)
 
   cp.exec rollbackCommand, callback
 
@@ -215,7 +216,7 @@ module.exports = (robot) ->
 
           msg.send "Rolling back pull request " + activePullRequestNumber + ". " + migrationCount + " migrations found."
 
-          doRollback migrationCount, (err, stdout, stderr) ->
+          doRollback pull.base.ref, migrationCount, (err, stdout, stderr) ->
             if err == null || err.code == 0
               msg.send "Rollback successful."
             else
