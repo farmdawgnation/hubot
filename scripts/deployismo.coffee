@@ -216,7 +216,7 @@ module.exports = (robot) ->
 
           msg.send "Rolling back pull request " + activePullRequestNumber + ". " + migrationCount + " migrations found."
 
-          doRollback pull.base.ref, migrationCount, (err, stdout, stderr) ->
+          doRollback pull.base.sha, migrationCount, (err, stdout, stderr) ->
             if err == null || err.code == 0
               msg.send "Rollback successful."
             else
