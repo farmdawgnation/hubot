@@ -206,7 +206,7 @@ module.exports = (robot) ->
         msg.send "Doesn't look like a pull request is active on prod."
         return
 
-      activePullRequestNumber = String(stdout).matches(/currently locked. Pull request # ([0-9]+)/)[1]
+      activePullRequestNumber = String(stdout).match(/currently locked. Pull request # ([0-9]+)/)[1]
 
       getGithubPullRequest activePullRequestNumber, (err, pull) ->
         if err
@@ -226,7 +226,7 @@ module.exports = (robot) ->
             msg.send "Error retrieving pull request files: " + err
             return
 
-          migrations = migration for pullFile in pullFiles when pullFile.filename.matches(/db\/migrate\//)
+          migrations = migration for pullFile in pullFiles when pullFile.filename.match(/db\/migrate\//)
           migrationCount = migrations.length
 
           msg.send "Rolling back pull request " + activePullRequestNumber ". " + migrationCount + " migrations found."
