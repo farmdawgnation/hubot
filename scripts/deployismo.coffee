@@ -211,7 +211,7 @@ module.exports = (robot) ->
             msg.send "Error retrieving pull request files: " + err
             return
 
-          migrations = (migration for pullFile in pullFiles when pullFile.filename.match(/db\/migrate\//))
+          migrations = (pullFile for pullFile in pullFiles when pullFile.filename.match(/db\/migrate\//))
           migrationCount = migrations.length
 
           msg.send "Rolling back pull request " + activePullRequestNumber + ". " + migrationCount + " migrations found."
