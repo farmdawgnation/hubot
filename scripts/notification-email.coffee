@@ -1,13 +1,11 @@
 # Take in notification emails and broadcast their contents into
 # the flow.
-querystring = require('querystring')
-
 module.exports = (robot) ->
   robot.router.get "/hubot/notification-email", (req, res) ->
-    query = querystring.parse(require('url').parse(req.url).query)
-    mandrill_events = req.body.mandrill_events
+    res.end()
 
-    for event in mandrill_events
+  robot.router.post "/hubot/notification-email", (req, res) ->
+    for event in JSON.parse(req.body.mandrill_events)
       user = {}
       user.flow = event.msg.subject
       user.name = "Siri"
