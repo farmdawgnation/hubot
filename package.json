@@ -1,31 +1,27 @@
 {
-  "name":        "hosted-hubot",
-  "version":     "2.2.0",
-  "author":      "GitHub Inc.",
-  "keywords":    "github hubot campfire bot",
-  "description": "A simple helpful Robot for your Company",
-  "licenses":     [{
-    "type":       "MIT",
-    "url":        "http://github.com/github/hubot/raw/master/LICENSE"
+  "name":"hosted-hubot",
+  "version":"2.2.0",
+  "author":"GitHub Inc.",
+  "keywords":"github hubot campfire bot",
+  "description":"A simple helpful Robot for your Company",
+  "licenses":[{
+    "type":"MIT",
+    "url":"http://github.com/github/hubot/raw/master/LICENSE"
   }],
-
-  "repository" : {
-    "type" : "git",
-    "url" : "http://github.com/github/hubot.git"
+  "repository":{
+    "type":"git",
+    "url":"http://github.com/github/hubot.git"
   },
-
-  "dependencies": {
-    "hubot-flowdock": "0.2.5",
-    "hubot": "2.2.0",
-    "hubot-scripts": ">=2.0.8",
-    "optparse": "1.0.3",
-    "qs": ">= 0.1.1",
-    "github": ">= 0.1.7"
+  "dependencies":{
+    "github":"0.2.1",
+    "optparse":"1.0.5",
+    "hubot-flowdock":"0.6.4",
+    "qs":"1.2.2",
+    "hubot-scripts":"2.5.15",
+    "hubot":"2.8.0"
   },
-
-  "engines": {
-    "node": "0.6.x",
-    "npm":  "1.1.x"
+  "engines":{
+    "node":"0.6.x",
+    "npm":"1.1.x"
   }
 }
-
